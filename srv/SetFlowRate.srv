@@ -1,0 +1,4 @@
+DeviceSetPoint[] set_points
+--- 
+bool success
+string message
