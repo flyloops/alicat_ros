@@ -13,13 +13,13 @@ from alicat_ros.msg import DeviceArray
 from alicat_ros.srv import SetFlowRate 
 from alicat_ros.srv import SetFlowRateResponse
 
-class AlicateNode(object):
+class AlicatNode(object):
 
-    Default_Param_File = 'alicate_param.yaml'
+    Default_Param_File = 'alicat_param.yaml'
 
     def __init__(self):
         self.lock = threading.Lock()
-        rospy.init_node('alicate')
+        rospy.init_node('alicat')
         self.get_param()
         self.rate = rospy.Rate(self.param['publish_rate'])
 
@@ -27,13 +27,27 @@ class AlicateNode(object):
         for address in self.param['addresses']:
             self.controllers[address] = FlowController(self.param['port'], address, self.param['protocol']) 
 
+        self.zero_flow_rates()
+
         self.device_array_pub = rospy.Publisher('alicat_device_array', DeviceArray, queue_size=10)
         self.set_flow_rate_srv = rospy.Service('alicat_set_flow_rate', SetFlowRate, self.on_set_flow_rate)
 
+
+
+    def zero_flow_rates(self):
+        """Set flow rates to zero. 
+        """
+        max_try_cnt = 5
         self.set_point_dict = {address:0.0 for address in self.param['addresses']}
         for address, rate in self.set_point_dict.items(): 
-            self.controllers[address].set_flow_rate(rate)
-
+            ok = False
+            cnt = 0
+            while not ok and cnt < max_try_cnt:
+                try:
+                    self.controllers[address].set_flow_rate(rate)
+                    ok = True
+                except UnicodeDecodeError:
+                    cnt+=1
 
     def on_set_flow_rate(self,req):
         success = True
@@ -59,7 +73,7 @@ class AlicateNode(object):
         return SetFlowRateResponse(success,message)
 
     def get_param(self):
-        self.param = rospy.get_param('/alicate/param', None)
+        self.param = rospy.get_param('/alicat', None)
         if self.param is None:
             param_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),self.Default_Param_File)
             with open(param_file_path,'r') as f:
@@ -98,6 +112,6 @@ class AlicateNode(object):
 # ------------------------------------------------------------------------------- 
 if __name__ == '__main__':
 
-    node = AlicateNode()
+    node = AlicatNode()
     node.run()
 
