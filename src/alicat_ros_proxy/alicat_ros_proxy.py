@@ -1,6 +1,9 @@
 from __future__ import print_function
 import rospy
 
+import threading
+import Queue
+
 from alicat_ros.srv import SetFlowRate 
 from alicat_ros.msg import DeviceSetPoint
 
@@ -11,19 +14,43 @@ class AlicatProxyException(Exception):
 
 class AlicatProxy(object):
 
-    def __init__(self,namespace=None):
-        service_name = 'alicat_set_flow_rate'
-        if namespace is not None:
-            service_name = '/{}/{}'.format(self.namespace,service_name)
-        rospy.wait_for_service(service_name)
-        self.set_flow_rate_proxy = rospy.ServiceProxy(service_name,SetFlowRate)
+    def __init__(self,namespace=None,use_thread=True):
 
-    
+        self.namespace = namespace
+        self.use_thread = use_thread
+        self.service_name = 'alicat_set_flow_rate'
+
+        if self.namespace is not None:
+            self.service_name = '/{}/{}'.format(self.namespace,self.service_name)
+        rospy.wait_for_service(self.service_name)
+        
+        if self.use_thread:
+            self.proxy_queue = Queue.Queue()
+            self.proxy_thread = threading.Thread(target=self.proxy_target)
+            self.proxy_thread.daemon = True
+            self.proxy_thread.start()
+        else:
+            self.set_flow_rate_proxy = rospy.ServiceProxy(self.service_name,SetFlowRate)
+
     def set_flow_rate(self,set_point_dict):
         set_point_list = []
         for addr,rate in set_point_dict.items():
             set_point_list.append(DeviceSetPoint(addr,rate))
-        rsp = self.set_flow_rate_proxy(set_point_list)
+        #for item in set_point_list:
+        #    print(item)
+        if self.use_thread:
+            self.proxy_queue.put(set_point_list)
+        else:
+            rsp = self.set_flow_rate_proxy(set_point_list)
+
+    def proxy_target(self):
+        set_flow_rate_proxy = rospy.ServiceProxy(self.service_name,SetFlowRate)
+        while True:
+            try:
+                set_point_list = self.proxy_queue.get_nowait()
+            except Queue.Empty:
+                continue
+            rsp = set_flow_rate_proxy(set_point_list)
 
 
 # Testing
