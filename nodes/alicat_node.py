@@ -56,19 +56,19 @@ class AlicatNode(object):
         for set_point in req.set_points:
             self.set_point_dict[set_point.address] = set_point.rate
 
-        for set_point in req.set_points:
-            if not set_point.address in self.param['addresses']:
-                success = False
-                message = 'invalid device address'
-                break
+        with self.lock:
+            for set_point in req.set_points:
+                if not set_point.address in self.param['addresses']:
+                    success = False
+                    message = 'invalid device address'
+                    break
 
-            try:
-                with self.lock:
+                try:
                     self.controllers[set_point.address].set_flow_rate(set_point.rate)
-            except Exception, e:
-                success = False 
-                message = str(e)
-                break
+                except Exception, e:
+                    success = False 
+                    message = str(e)
+                    break
 
         return SetFlowRateResponse(success,message)
 
@@ -83,13 +83,13 @@ class AlicatNode(object):
         while not rospy.is_shutdown():
             # Read actual flow rate from alicat devices
             actual_dict = {address:None for address in self.param['addresses']}
-            for address in self.param['addresses']:
-                try:
-                    with self.lock:
+            with self.lock:
+                for address in self.param['addresses']:
+                    try:
                         flow = self.controllers[address].get()['volumetric_flow'] 
-                except Exception, e:
-                    continue
-                actual_dict[address] = flow
+                    except Exception, e:
+                        continue
+                    actual_dict[address] = flow
 
             # Publish flow data
             msg = DeviceArray()
