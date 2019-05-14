@@ -14,7 +14,7 @@ class AlicatProxyException(Exception):
 
 class AlicatProxy(object):
 
-    def __init__(self,namespace=None,use_thread=False):
+    def __init__(self,namespace=None,use_thread=True):
 
         self.namespace = namespace
         self.use_thread = use_thread
