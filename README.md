@@ -19,7 +19,7 @@ if you have not already done this.  Tested with ros kinetic, desktop install
 2. Setup your catkin workspace.  Instructions can be found [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) 
 if you have not already done this. 
     
-3. Download and install the python library from [here](https://github.com/willdickson/em3242_angle_sensor_ros)
+3. Download and install the python library from [here](https://github.com/numat/alicat)
 
 4. Then clone the git repository and run catkin make.
 
