@@ -11,7 +11,7 @@ setting the mass flow rates.
 * [pyserial](https://pythonhosted.org/pyserial/)
 * [alicat](https://github.com/numat/alicat)  
 
-# Installation
+## Installation
 
 1. Install ROS. Instructions can be found [here](http://wiki.ros.org/kinetic/Installation/Ubuntu) 
 if you have not already done this.  Tested with ros kinetic, desktop install
