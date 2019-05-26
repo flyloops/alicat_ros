@@ -1,11 +1,11 @@
-## alicat_ros 
+# alicat_ros 
 
 ROS interface to alicat mass flow controllers. Contatins a ROS node
 "alicat_ros_node" which communicates via USB/serial with the mass flow
 controllers connnect via the BB9-232 interface and provides a ROS service for
 setting the mass flow rates. 
 
-# Requirements
+## Requirements
 
 * [ROS](http://wiki.ros.org/Documentation) (tested with kinetic, desktop install)
 * [pyserial](https://pythonhosted.org/pyserial/)
@@ -31,7 +31,7 @@ $catkin_make
 
 ```
 
-# Alicat proxy service example
+## Alicat proxy service example
 
 ```python
 from alicat_ros_proxy import AlicatProxy
